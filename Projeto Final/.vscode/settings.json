@@ -1,0 +1,12 @@
+{
+	"files.associations": {
+		"mortal_combat.h": "c"
+	},
+	"makefile.launchConfigurations": [
+		{
+			"cwd": "/Users/maggie/Library/Mobile Documents/com~apple~CloudDocs/Lusofona/Linguagens de Programação I/Projeto Final/output",
+			"binaryPath": "/Users/maggie/Library/Mobile Documents/com~apple~CloudDocs/Lusofona/Linguagens de Programação I/Projeto Final/output/main",
+			"binaryArgs": []
+		}
+	]
+}
