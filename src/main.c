@@ -1,9 +1,14 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #define COMBO 0
 #define ATAQUES 1
+#define FICHEIRO 0
+#define INPUT 1
+#define TARZANTABORDA 4
+
 //
 //Combos are not affected by multi_estamina.
 //Life recovering when deffending is affected by multi_estamina.
@@ -21,7 +26,7 @@ typedef struct historico_jogadas{
 
 int 		efeito_ataque_simples(char j_1, char j_2);
 int 		multi_estamina(Jogador *jogador);
-int    	prep_jogada(Jogador *jogador);
+int    	    prep_jogada(Jogador *jogador, FILE *file, int input_or_file);
 void        check_wins(Jogador **j_1, Jogador **j_2);
 Jogador    *init_jogador(int id);
 void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem);
@@ -457,6 +462,19 @@ int multi_estamina(Jogador *jogador)
 int    ataque_invalido(char ataque[], Jogador *jogador){
     if (strlen(ataque) > 4)
     {
+        if (!strncmp(ataque, "TARZANTABORDA", 13))
+        {
+            if (!ataque[13])
+                return (1);
+            for(int i = 13; ataque[i]; i++)
+            {
+                if (!isdigit(ataque[i]))
+                    return (TARZANTABORDA);
+            }
+            if (jogador->estamina <= 500 || jogador->estamina >= 900)
+                return (2);
+            return (TARZANTABORDA);
+        }
         if (strcmp(ataque, "ARROZAO") != 0 && strcmp(ataque, "DADBAD") != 0 && strcmp(ataque, "STTEACC") != 0 && strcmp(ataque, "TATAPAAA") != 0)
             return (1);
         if (jogador->estamina <= 750)
@@ -498,7 +516,7 @@ void    print_history(Jogador *jogador)
     Jogador *temp;
     char *history = NULL;
 
-    temp = jogador;
+    temp = jogador->prev;
     for (int i = 0; i < 20 && temp != NULL;)
     {
         if (temp->ataque != NULL)
@@ -524,23 +542,50 @@ void    print_history(Jogador *jogador)
     }
 }
 
-int    prep_jogada(Jogador *jogador)
+// Returns 0 if everything ran smoothly, 1 if the file is over or if the attack is invalid,
+// and 2 if TARZANTABORDA was activated.
+int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
 {
     char ataque[200];
     jogador->multi_estamina = multi_estamina(jogador);
     printf("P#%d[%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
     print_history(jogador);
-    printf("I: ");
-    scanf(" %s", ataque);
+    if (input_or_file == INPUT)
+    {
+        printf("I: ");
+        scanf(" %s", ataque);
+    }
+    else
+    {
+        fgets(ataque, 200, file);
+        if (ataque == NULL)
+            return (1);
+        if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
+            ataque[strlen(ataque) - 1] = '\0';
+        printf("I: %s\n", ataque);
+    }
     while (ataque_invalido(ataque, jogador) == 2)
     {
         printf("Estamina insuficiente\n");
         printf("P#%d[%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
         print_history(jogador);
-        printf("I: ");
-        scanf(" %s", ataque);
+        if (input_or_file == FICHEIRO)
+        {
+            fgets(ataque, 200, file);
+            if (ataque == NULL)
+                return (1);
+            if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
+                ataque[strlen(ataque) - 1] = '\0';
+            printf("I: %s\n", ataque);
+        }
+        else
+        {
+            printf("I: ");           
+            scanf(" %s", ataque);
+        }
+
     }
-    if(ataque_invalido(ataque, jogador))
+    if(ataque_invalido(ataque, jogador) && ataque_invalido(ataque, jogador) != TARZANTABORDA)
         return (1);
     if (strlen(ataque) > 4)
         jogador->tipo_de_ataque = COMBO;
@@ -553,6 +598,8 @@ int    prep_jogada(Jogador *jogador)
     }
     else
         jogador->ataque = strdup(ataque);
+    if (ataque_invalido(ataque, jogador) == TARZANTABORDA)
+        return(TARZANTABORDA);
     return (0);
 }
 
@@ -606,6 +653,29 @@ void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem)
     exit(0);
 }
 
+void    tarzantaborda(Jogador **j_1, Jogador **j_2, int retrocessos)
+{
+    Jogador *novo_atualJ1 = *j_1;
+    Jogador *novo_atualJ2 = *j_2;   
+    
+    printf(">>> Voltou %d ataques\n", retrocessos);
+
+    while (retrocessos > 0 && (*j_1)->id_ataque > 0)
+    {
+        novo_atualJ1 = (*j_1)->prev;
+        novo_atualJ2 = (*j_2)->prev;
+        if ((*j_1)->ataque != NULL)
+            free((*j_1)->ataque);
+        if ((*j_2)->ataque != NULL)
+            free((*j_2)->ataque);
+        free(*j_1);
+        free(*j_2);
+        *j_1 = novo_atualJ1;
+        *j_2 = novo_atualJ2;
+        retrocessos--;
+    }
+}
+
 void    jogada(Jogador **j_1, Jogador **j_2)
 {
     int vida_perdidaJ1 = 0;
@@ -632,6 +702,11 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     j_1_seguinte->id = (*j_1)->id;
     j_2_seguinte->id = (*j_2)->id;
     printf("[%c,%c][%c,%c][%c,%c][%c,%c]\n", (*j_1)->ataque[0], (*j_2)->ataque[0], (*j_1)->ataque[1], (*j_2)->ataque[1], (*j_1)->ataque[2], (*j_2)->ataque[2], (*j_1)->ataque[3], (*j_2)->ataque[3]);
+    if (!strncmp((*j_1)->ataque, "TARZANTABORDA", 13))
+    {
+        tarzantaborda(j_1, j_2, atoi(&(*j_1)->ataque[13]));
+        return;
+    }
     if ((*j_1)->tipo_de_ataque == ATAQUES && (*j_2)->tipo_de_ataque == ATAQUES)
     {
         for (int i = 0; i < 4; i++)
@@ -783,14 +858,51 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     *j_2 = j_2_seguinte;
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
-    Jogador *j_1 = init_jogador(1);
-    Jogador *j_2 = init_jogador(2);
+    Jogador *j_1;
+    Jogador *j_2;
+    int64_t file_or_input;
+    FILE     *file;
+    int     prep;
+
+    if (argc > 2)
+    {
+        printf("Número inválido de argumentos!");
+        return (1);
+    }
+    if (argc == 2)
+    {
+        file = fopen(argv[1], "r");
+        if (file == NULL)
+        {
+            printf("Ficheiro inválido!\n");
+            return (2);
+        }
+        file_or_input = FICHEIRO;
+    }
+    else
+        file_or_input = INPUT;
+    j_1 = init_jogador(1);
+    j_2 = init_jogador(2);
     while (1)
     {
-        if (prep_jogada(j_1) || prep_jogada(j_2))
+        prep = prep_jogada(j_1, file, file_or_input);
+        if (prep == 1)
             exit_game(&j_1, &j_2, "Entrada invalida\n");
+        else if (prep == TARZANTABORDA)
+        {
+            tarzantaborda(&j_1, &j_2, atoi(&(j_1->ataque[13])));
+            continue;
+        }
+        prep = prep_jogada(j_2, file, file_or_input);
+        if (prep == 1)
+            exit_game(&j_1, &j_2, "Entrada invalida\n");
+        else if (prep == TARZANTABORDA)
+        {
+            tarzantaborda(&j_1, &j_2, atoi(&(j_2->ataque[13])));
+            continue;
+        }
         jogada(&j_1, &j_2);
         check_wins(&j_1, &j_2);
     }
