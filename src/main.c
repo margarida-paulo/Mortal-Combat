@@ -24,7 +24,7 @@ int 		multi_estamina(Jogador *jogador);
 int    	prep_jogada(Jogador *jogador);
 void        check_wins(Jogador **j_1, Jogador **j_2);
 Jogador    *init_jogador(int id);
-void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int free_ataque);
+void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem);
 
 //nbn
 // Returns the points taken by an attack. Positive points
@@ -71,6 +71,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }        
             }
+            break;
         }
         case 'P' : {
             switch(j_2){
@@ -105,6 +106,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
         case 'A' : {
@@ -140,6 +142,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (-20);
                 }         
             }
+            break;
         }
 
        case 'E' : {
@@ -175,6 +178,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
       case 'T' : {
@@ -210,6 +214,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
       case 'R' : {
@@ -245,6 +250,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
       case 'C' : {
@@ -280,6 +286,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
       case 'B' : {
@@ -315,6 +322,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
       case 'O' : {
@@ -350,6 +358,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
       case 'M' : {
@@ -385,6 +394,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (20);
                 }         
             }
+            break;
         }
 
       case ' ' : {
@@ -426,6 +436,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (0);
                 }           
             }
+            break;
         }
     }
     return (-50);
@@ -443,11 +454,14 @@ int multi_estamina(Jogador *jogador)
         return (4);
 }
 
-int    ataque_invalido(char ataque[]){
+int    ataque_invalido(char ataque[], Jogador *jogador){
     if (strlen(ataque) > 4)
     {
         if (strcmp(ataque, "ARROZAO") != 0 && strcmp(ataque, "DADBAD") != 0 && strcmp(ataque, "STTEACC") != 0 && strcmp(ataque, "TATAPAAA") != 0)
             return (1);
+        if (jogador->estamina <= 750)
+            return (2);
+        return (0);
     }
     for (int i = 0; i < 4 && ataque[i]; i++)
     {
@@ -457,15 +471,76 @@ int    ataque_invalido(char ataque[]){
     return (0);
 }
 
+
+char    *charstrjoin_frees(char c, char *str)
+{
+    char    *new_str;
+    size_t     i;
+
+    if (str == NULL)
+    {
+        new_str = strdup("a");
+        new_str[0] = c;
+        return (new_str);
+    }
+    new_str = malloc(sizeof(char) * strlen(str) + 2);
+    new_str[0] = c;
+    for (i = 0; i < strlen(str); i++)
+        new_str[i + 1] = str[i];
+    new_str[i + 1] = '\0';
+    free (str);
+    return (new_str);
+}
+
+
+void    print_history(Jogador *jogador)
+{
+    Jogador *temp;
+    char *history = NULL;
+
+    temp = jogador;
+    for (int i = 0; i < 20 && temp != NULL;)
+    {
+        if (temp->ataque != NULL)
+        {
+            for(int a = strlen(temp->ataque) - 1; a >= 0; a--)
+            {
+                history = charstrjoin_frees(temp->ataque[a], history);
+                i++;
+                if (i == 20)
+                    break;
+            }
+        }
+        if (i == 20)
+            break;
+        temp = temp->prev;
+    }
+    if (history == NULL)
+        printf("H: \n");
+    else
+    {
+        printf("H: %s\n", history);
+        free(history);
+    }
+}
+
 int    prep_jogada(Jogador *jogador)
 {
+    char ataque[200];
     jogador->multi_estamina = multi_estamina(jogador);
     printf("P#%d[%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
-//    printf("H: ", HISTORY);
-    char ataque[200];
+    print_history(jogador);
     printf("I: ");
     scanf(" %s", ataque);
-    if (ataque_invalido(ataque))
+    while (ataque_invalido(ataque, jogador) == 2)
+    {
+        printf("Estamina insuficiente\n");
+        printf("P#%d[%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
+        print_history(jogador);
+        printf("I: ");
+        scanf(" %s", ataque);
+    }
+    if(ataque_invalido(ataque, jogador))
         return (1);
     if (strlen(ataque) > 4)
         jogador->tipo_de_ataque = COMBO;
@@ -484,11 +559,11 @@ int    prep_jogada(Jogador *jogador)
 void        check_wins(Jogador **j_1, Jogador **j_2)
 {
     if ((*j_1)->vida <= 0 && (*j_2)->vida <= 0)
-        exit_game((j_1), (j_2), "Empate! O jogo termina!\n", 0);
+        exit_game((j_1), (j_2), "Empate! O jogo termina!\n");
     else if ((*j_1)->vida <= 0)
-        exit_game((j_1), (j_2), "O jogador 2 ganhou!\n", 0);
+        exit_game((j_1), (j_2), "Jogador 2 venceu o jogo!\n");
     else if ((*j_2)->vida <= 0)
-        exit_game((j_1), (j_2), "O jogador 1 ganhou!\n", 0);
+        exit_game((j_1), (j_2), "Jogador 1 venceu o jogo!\n");
 }
 
 Jogador    *init_jogador(int id)
@@ -500,18 +575,19 @@ Jogador    *init_jogador(int id)
     j->id_ataque = 0;
     j->prev = NULL;
     j->next = NULL;
+    j->ataque = NULL;
 
     return (j);
 }
 
-void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int free_ataque)
+void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem)
 {
     Jogador *temp;
     
     while(*j_1)
     {
         temp = (*j_1)->prev;
-        if (free_ataque)
+        if ((*j_1)->ataque != NULL)
             free((*j_1)->ataque);
         free(*j_1);
         (*j_1) = temp;
@@ -520,7 +596,7 @@ void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int free_a
     while(*j_2)
     {
         temp = (*j_2)->prev;
-        if (free_ataque)
+        if ((*j_2)->ataque != NULL)
             free((*j_2)->ataque);
         free(*j_2);
         (*j_2) = temp;
@@ -536,16 +612,21 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     int vida_perdidaJ2 = 0;
     int estamina_gastaJ1 = 0;
     int estamina_gastaJ2 = 0;
+    int pontos_ataque;
     Jogador *j_1_seguinte = malloc(sizeof(Jogador));
     Jogador *j_2_seguinte = malloc(sizeof(Jogador));
     j_1_seguinte->vida = (*j_1)->vida;
     j_1_seguinte->estamina = (*j_1)->estamina;
     j_2_seguinte->vida = (*j_2)->vida;
     j_2_seguinte->estamina = (*j_2)->estamina;
-    j_1_seguinte->ataque = (*j_1)->ataque + 1;
-    j_2_seguinte->ataque = (*j_2)->ataque + 1;
+    j_1_seguinte->id_ataque = (*j_1)->id_ataque + 1;
+    j_2_seguinte->id_ataque = (*j_2)->id_ataque + 1;
+    j_1_seguinte->ataque = NULL;
+    j_2_seguinte->ataque = NULL;
     (*j_1)->next = j_1_seguinte;
     (*j_2)->next = j_2_seguinte;
+    j_1_seguinte->next = NULL;
+    j_2_seguinte->next = NULL;
     j_1_seguinte->prev = *j_1;
     j_2_seguinte->prev = *j_2;
     j_1_seguinte->id = (*j_1)->id;
@@ -573,7 +654,7 @@ void    jogada(Jogador **j_1, Jogador **j_2)
                 estamina_gastaJ1 += 25;
             if ((*j_2)->ataque[i] != 'D' && (*j_2)->ataque[i] != ' ')
                 estamina_gastaJ2 += 25;
-            int pontos_ataque = efeito_ataque_simples((*j_1)->ataque[i], (*j_2)->ataque[i]);
+            pontos_ataque = efeito_ataque_simples((*j_1)->ataque[i], (*j_2)->ataque[i]);
             if (pontos_ataque > 0)
                 vida_perdidaJ2 += (pontos_ataque * (*j_1)->multi_estamina);
             else if (pontos_ataque < 0)
@@ -583,32 +664,112 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     else if ((*j_1)->tipo_de_ataque == COMBO && (*j_2)->tipo_de_ataque == COMBO)
     {
         if(strcmp((*j_1)->ataque, "ARROZAO") == 0)
+        {
             vida_perdidaJ2 += 500;
-        estamina_gastaJ1 += 500;
-        if(strcmp((*j_1)->ataque, "DADBAD") == 0)
+            estamina_gastaJ1 += 500;
+        }
+
+        else if(strcmp((*j_1)->ataque, "DADBAD") == 0)
+        {
             vida_perdidaJ2 += 400;
-        estamina_gastaJ1 += 400;
-        if(strcmp((*j_1)->ataque, "STTEACC") == 0)
+            estamina_gastaJ1 += 400;
+        }
+
+        else if(strcmp((*j_1)->ataque, "STTEACC") == 0)
+        {
             vida_perdidaJ2 += 300;
-        estamina_gastaJ1 += 300;
-        if(strcmp((*j_1)->ataque, "TATAPAAA") == 0)
+            estamina_gastaJ1 += 300;
+        }
+
+        else if(strcmp((*j_1)->ataque, "TATAPAAA") == 0)
+        {
             vida_perdidaJ2 += 200;
-        estamina_gastaJ1 += 200;
+            estamina_gastaJ1 += 200;
+        }
+
+
+       if(strcmp((*j_2)->ataque, "ARROZAO") == 0)
+        {
+            vida_perdidaJ1 += 500;
+            estamina_gastaJ2 += 500;
+        }
+
+        else if(strcmp((*j_2)->ataque, "DADBAD") == 0)
+        {
+            vida_perdidaJ1 += 400;
+            estamina_gastaJ2 += 400;
+        }
+
+        else if(strcmp((*j_2)->ataque, "STTEACC") == 0)
+        {
+            vida_perdidaJ1 += 300;
+            estamina_gastaJ2 += 300;
+        }
+
+        else if(strcmp((*j_2)->ataque, "TATAPAAA") == 0)
+        {
+            vida_perdidaJ1 += 200;
+            estamina_gastaJ2 += 200;
+        }
     }
     else if ((*j_2)->tipo_de_ataque == COMBO)
     {
         if(strcmp((*j_2)->ataque, "ARROZAO") == 0)
+        {
             vida_perdidaJ1 += 500;
-        estamina_gastaJ2 += 500;
-        if(strcmp((*j_2)->ataque, "DADBAD") == 0)
+            estamina_gastaJ2 += 500;
+        }
+
+        else if(strcmp((*j_2)->ataque, "DADBAD") == 0)
+        {
             vida_perdidaJ1 += 400;
-        estamina_gastaJ2 += 400;
-        if(strcmp((*j_2)->ataque, "STTEACC") == 0)
+            estamina_gastaJ2 += 400;
+        }
+
+        else if(strcmp((*j_2)->ataque, "STTEACC") == 0)
+        {
             vida_perdidaJ1 += 300;
-        estamina_gastaJ2 += 300;
-        if(strcmp((*j_2)->ataque, "TATAPAAA") == 0)
+            estamina_gastaJ2 += 300;
+        }
+
+        else if(strcmp((*j_2)->ataque, "TATAPAAA") == 0)
+        {
             vida_perdidaJ1 += 200;
-        estamina_gastaJ2 += 200;
+            estamina_gastaJ2 += 200;
+        }
+
+        free((*j_1)->ataque);
+        (*j_1)->ataque = strdup(" ");
+
+    }
+    else if ((*j_1)->tipo_de_ataque == COMBO)
+    {
+        if(strcmp((*j_1)->ataque, "ARROZAO") == 0)
+        {
+            vida_perdidaJ2 += 500;
+            estamina_gastaJ1 += 500;
+        }
+
+        else if(strcmp((*j_1)->ataque, "DADBAD") == 0)
+        {
+            vida_perdidaJ2 += 400;
+            estamina_gastaJ1 += 400;
+        }
+
+        else if(strcmp((*j_1)->ataque, "STTEACC") == 0)
+        {
+            vida_perdidaJ2 += 300;
+            estamina_gastaJ1 += 300;
+        }
+
+        else if(strcmp((*j_1)->ataque, "TATAPAAA") == 0)
+        {
+            vida_perdidaJ2 += 200;
+            estamina_gastaJ1 += 200;
+        }
+        free((*j_2)->ataque);
+        (*j_2)->ataque = strdup(" ");
+
     }
     if((*j_1)->tipo_de_ataque == ATAQUES && (*j_2)->tipo_de_ataque == COMBO)
         estamina_gastaJ1 -= 25;
@@ -629,7 +790,7 @@ int main(void)
     while (1)
     {
         if (prep_jogada(j_1) || prep_jogada(j_2))
-            exit_game(&j_1, &j_2, "Entrada invalida\n", 0);
+            exit_game(&j_1, &j_2, "Entrada invalida\n");
         jogada(&j_1, &j_2);
         check_wins(&j_1, &j_2);
     }
