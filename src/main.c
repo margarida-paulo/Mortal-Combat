@@ -10,6 +10,11 @@
 #define FICHEIRO 0
 #define INPUT 1
 #define TARZANTABORDA 4
+#define MODO_JESUS 5
+#define ALT_F4 6
+#define KEBAB 7
+#define HIROSHIMA 8
+#define NOOD_MODE 9
 
 //
 //Combos are not affected by multi_estamina.
@@ -28,7 +33,7 @@ typedef struct historico_jogadas{
 
 int 		efeito_ataque_simples(char j_1, char j_2);
 int 		multi_estamina(Jogador *jogador);
-int    	    prep_jogada(Jogador *jogador, FILE *file, int input_or_file);
+int    	    prep_jogada(Jogador **jogador, FILE *file, int input_or_file, Jogador **outro_jogador);
 void        check_wins(Jogador **j_1, Jogador **j_2, char **ataqueJ1, char **ataqueJ2, int file_or_input, FILE *file);
 Jogador    *init_jogador(int id);
 void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int file_or_input, FILE *file);
@@ -38,8 +43,6 @@ void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int file_
 //take life from Jogador 2. Negative points take life from
 //Jogador 1.
 // If the attacks are not valid, returns -50.
-
-
 int efeito_ataque_simples(char j_1, char j_2)
 {
     if (j_1 == j_2)
@@ -75,10 +78,10 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case 'M' : {
                     return (-4);
-                }   
+                }
                 case ' ' : {
                     return (20);
-                }        
+                }
             }
             break;
         }
@@ -110,10 +113,10 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case 'M' : {
                     return (16);
-                } 
+                }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -149,7 +152,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (-20);
-                }         
+                }
             }
             break;
         }
@@ -185,7 +188,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -221,7 +224,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -257,7 +260,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -293,7 +296,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -329,7 +332,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -365,7 +368,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -401,7 +404,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case ' ' : {
                     return (20);
-                }         
+                }
             }
             break;
         }
@@ -437,13 +440,13 @@ int efeito_ataque_simples(char j_1, char j_2)
                 }
                 case 'M' : {
                     return (-20);
-                }     
+                }
                 case ' ' : {
                     return (0);
-                } 
+                }
                 case 'D' : {
                     return (0);
-                }           
+                }
             }
             break;
         }
@@ -463,6 +466,63 @@ int multi_estamina(Jogador *jogador)
         return (4);
 }
 
+void	modojesus(Jogador **j_1, Jogador **j_2)
+{
+	Jogador *novo_atualJ1;
+	Jogador *novo_atualJ2;
+
+    while ((*j_1)->id_ataque > 0)
+    {
+        novo_atualJ1 = (*j_1)->prev;
+        novo_atualJ2 = (*j_2)->prev;
+        if ((*j_1)->ataque != NULL)
+            free((*j_1)->ataque);
+        if ((*j_2)->ataque != NULL)
+            free((*j_2)->ataque);
+        free(*j_1);
+        free(*j_2);
+        *j_1 = novo_atualJ1;
+        *j_2 = novo_atualJ2;
+    }
+	if (novo_atualJ1->ataque != NULL)
+		free(novo_atualJ1->ataque);
+	if (novo_atualJ2->ataque != NULL)
+		free(novo_atualJ2->ataque);
+	novo_atualJ1->ataque = NULL;
+	novo_atualJ2->ataque = NULL;
+}
+
+void	alt_f4(Jogador **j_1, int pontos)
+{
+	(*j_1)->estamina += pontos;
+	if ((*j_1)->estamina > 1000)
+		(*j_1)->estamina = 1000;
+}
+
+void	kebab(Jogador **j_2, int pontos)
+{
+	(*j_2)->estamina += pontos;
+	if ((*j_2)->estamina > 1000)
+		(*j_2)->estamina = 1000;
+}
+
+void	hiroshima(Jogador **j_1, int pontos)
+{
+	(*j_1)->vida += pontos;
+	if ((*j_1)->vida > 1000)
+		(*j_1)->vida = 1000;
+}
+
+void	nood_mode(Jogador **j_2, int pontos)
+{
+	(*j_2)->vida += pontos;
+	if ((*j_2)->vida > 1000)
+		(*j_2)->vida = 1000;
+}
+
+
+// Returns 1 if there is an error, 2 if there is not enough stamina, and an int defined by the name of
+// a cheat code in case of a cheat code being in use (or TARZANTABORDA)
 int    ataque_invalido(char ataque[], Jogador *jogador){
     if (strlen(ataque) > 4)
     {
@@ -473,11 +533,57 @@ int    ataque_invalido(char ataque[], Jogador *jogador){
             for(int i = 13; ataque[i]; i++)
             {
                 if (!isdigit(ataque[i]))
-                    return (TARZANTABORDA);
+                    return (1);
             }
             if (jogador->estamina <= 500 || jogador->estamina >= 900)
                 return (2);
             return (TARZANTABORDA);
+        }
+        if (!strcmp(ataque, "Modo-Jesus"))
+            return (MODO_JESUS);
+		if (!strncmp(ataque, "Alt-F4", 6))
+        {
+            if (!ataque[6])
+                return (1);
+            for(int i = 6; ataque[i]; i++)
+            {
+                if (!isdigit(ataque[i]))
+                    return (1);
+            }
+            return (ALT_F4);
+        }
+		if (!strncmp(ataque, "Kebab", 5))
+        {
+            if (!ataque[5])
+                return (1);
+            for(int i = 5; ataque[i]; i++)
+            {
+                if (!isdigit(ataque[i]))
+                    return (1);
+            }
+            return (KEBAB);
+        }
+		if (!strncmp(ataque, "Hiroshima", 9))
+        {
+            if (!ataque[9])
+                return (1);
+            for(int i = 9; ataque[i]; i++)
+            {
+                if (!isdigit(ataque[i]))
+                    return (1);
+            }
+            return (HIROSHIMA);
+        }
+		if (!strncmp(ataque, "Nood-Mode", 9))
+        {
+            if (!ataque[9])
+                return (1);
+            for(int i = 9; ataque[i]; i++)
+            {
+                if (!isdigit(ataque[i]))
+                    return (1);
+            }
+            return (NOOD_MODE);
         }
         if (strcmp(ataque, "ARROZAO") != 0 && strcmp(ataque, "DADBAD") != 0 && strcmp(ataque, "STTEACC") != 0 && strcmp(ataque, "TATAPAAA") != 0)
             return (1);
@@ -529,7 +635,7 @@ void    print_history(Jogador *jogador)
             }
             i++;
             if (i >= 20)
-                break;           
+                break;
         }
         else if (temp->ataque != NULL)
         {
@@ -554,15 +660,16 @@ void    print_history(Jogador *jogador)
 
 // Returns 0 if everything ran smoothly, 1 if the file is over or if the attack is invalid,
 // and 2 if TARZANTABORDA was activated.
-int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
+int    prep_jogada(Jogador **jogador, FILE *file, int input_or_file, Jogador **outro_jogador)
 {
-    char ataque[200];
-    jogador->multi_estamina = multi_estamina(jogador);
+    char 	ataque[200];
+	int		return_ataque_invalido;
+    (*jogador)->multi_estamina = multi_estamina((*jogador));
     if (DEBUG == 1)
-        printf("Jogada: %d P#%d [%d|%d] (x%d)\n", jogador->id_ataque, jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
+        printf("Jogada: %d P#%d [%d|%d] (x%d)\n", (*jogador)->id_ataque, (*jogador)->id, (*jogador)->vida, (*jogador)->estamina, (*jogador)->multi_estamina);
     else
-        printf("P#%d [%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
-    print_history(jogador);
+        printf("P#%d [%d|%d] (x%d)\n", (*jogador)->id, (*jogador)->vida, (*jogador)->estamina, (*jogador)->multi_estamina);
+    print_history((*jogador));
     if (input_or_file == INPUT)
     {
         printf("I: ");
@@ -576,11 +683,11 @@ int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
             ataque[strlen(ataque) - 1] = '\0';
         printf("I: %s\n", ataque);
     }
-    while (ataque_invalido(ataque, jogador) == 2)
+    while (ataque_invalido(ataque, (*jogador)) == 2)
     {
         printf("Estamina insuficiente\n");
-        printf("P#%d [%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
-        print_history(jogador);
+        printf("P#%d [%d|%d] (x%d)\n", (*jogador)->id, (*jogador)->vida, (*jogador)->estamina, (*jogador)->multi_estamina);
+        print_history((*jogador));
         if (input_or_file == FICHEIRO)
         {
             if (fgets(ataque, 200, file) == NULL)
@@ -591,25 +698,82 @@ int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
         }
         else
         {
-            printf("I: ");           
+            printf("I: ");
             scanf(" %s", ataque);
         }
-
     }
-    if(ataque_invalido(ataque, jogador) && ataque_invalido(ataque, jogador) != TARZANTABORDA)
+	return_ataque_invalido = ataque_invalido(ataque, (*jogador));
+    while (return_ataque_invalido >= MODO_JESUS && return_ataque_invalido <= NOOD_MODE)
+    {
+		Jogador	**j_1;
+		Jogador	**j_2;
+		if ((*jogador)->id == 1)
+		{
+			j_1 = jogador;
+			j_2 = outro_jogador;
+		}
+		else
+		{
+			j_2 = jogador;
+			j_1 = outro_jogador;
+		}
+		switch (return_ataque_invalido){
+        	case MODO_JESUS : {
+				modojesus(j_1, j_2);
+				break ;
+			}
+			case ALT_F4 : {
+				alt_f4(j_1, atoi(&(ataque[6])));
+				break ;
+			}
+			case KEBAB : {
+				kebab(j_2, atoi(&(ataque[5])));
+				break ;
+			}
+			case HIROSHIMA : {
+				hiroshima(j_1, atoi(&(ataque[9])));
+				break ;
+			}
+			case NOOD_MODE : {
+				nood_mode(j_2, atoi(&(ataque[9])));
+				break ;
+			}
+		}
+        printf("P#%d [%d|%d] (x%d)\n", (*jogador)->id, (*jogador)->vida, (*jogador)->estamina, (*jogador)->multi_estamina);
+        print_history((*jogador));
+        if (input_or_file == FICHEIRO)
+        {
+            if (fgets(ataque, 200, file) == NULL)
+                return (1);
+            if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
+                ataque[strlen(ataque) - 1] = '\0';
+            printf("I: %s\n", ataque);
+        }
+        else
+        {
+            printf("I: ");
+            scanf(" %s", ataque);
+        }
+	return_ataque_invalido = ataque_invalido(ataque, (*jogador));
+    }
+    if(ataque_invalido(ataque, (*jogador)) && ataque_invalido(ataque, (*jogador)) != TARZANTABORDA)
         return (1);
     if (strlen(ataque) > 4)
-        jogador->tipo_de_ataque = COMBO;
-    else   
-        jogador->tipo_de_ataque = ATAQUES;
-    if (jogador->tipo_de_ataque == ATAQUES){
-        jogador->ataque = strdup("    ");
+        (*jogador)->tipo_de_ataque = COMBO;
+    else
+        (*jogador)->tipo_de_ataque = ATAQUES;
+    if ((*jogador)->tipo_de_ataque == ATAQUES){
+        (*jogador)->ataque = strdup("    ");
         for (int i = 0; ataque[i]; i++)
-            (jogador->ataque)[i] = ataque[i];
+            ((*jogador)->ataque)[i] = ataque[i];
     }
     else
-        jogador->ataque = strdup(ataque);
-    if (ataque_invalido(ataque, jogador) == TARZANTABORDA)
+	{
+		if ((*jogador)->ataque != NULL)
+			free((*jogador)->ataque);
+        (*jogador)->ataque = strdup(ataque);
+	}
+    if (ataque_invalido(ataque, (*jogador)) == TARZANTABORDA)
         return(TARZANTABORDA);
     return (0);
 }
@@ -660,7 +824,7 @@ Jogador    *init_jogador(int id)
 void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int file_or_input, FILE *file)
 {
     Jogador *temp;
-    
+
     while(*j_1)
     {
         temp = (*j_1)->prev;
@@ -694,8 +858,8 @@ void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int file_o
 void    tarzantaborda(Jogador **j_1, Jogador **j_2, int retrocessos)
 {
     Jogador *novo_atualJ1 = *j_1;
-    Jogador *novo_atualJ2 = *j_2;   
-    
+    Jogador *novo_atualJ2 = *j_2;
+
     printf(">>> Voltou %d ataques\n", retrocessos);
 
     while (retrocessos > 0 && (*j_1)->id_ataque > 0)
@@ -712,6 +876,12 @@ void    tarzantaborda(Jogador **j_1, Jogador **j_2, int retrocessos)
         *j_2 = novo_atualJ2;
         retrocessos--;
     }
+	if (novo_atualJ1->ataque != NULL)
+		free(novo_atualJ1->ataque);
+	if (novo_atualJ2->ataque != NULL)
+		free(novo_atualJ2->ataque);
+	novo_atualJ1->ataque = NULL;
+	novo_atualJ2->ataque = NULL;
 }
 
 Jogador *dup_jogador_seguinte(Jogador *jogador)
@@ -796,10 +966,18 @@ void    jogada(Jogador **j_1, Jogador **j_2, int file_or_input, FILE *file)
             j_2_seguinte->estamina -= estamina_gastaJ2;
             j_1_seguinte->ataque = NULL;
             j_2_seguinte->ataque = NULL;
-            if (j_1_seguinte->estamina < 0)
-                j_1_seguinte->estamina = 0;
-            if (j_2_seguinte->estamina < 0)
-                j_2_seguinte->estamina = 0;
+    		if (j_1_seguinte->estamina > 1000)
+        		j_1_seguinte->estamina = 1000;
+    		if (j_2_seguinte->estamina > 1000)
+        		j_2_seguinte->estamina = 1000;
+    		if (j_1_seguinte->estamina < 0)
+        		j_1_seguinte->estamina = 0;
+    		if (j_2_seguinte->estamina < 0)
+        		j_2_seguinte->estamina = 0;
+    		if (j_1_seguinte->vida > 1000)
+        		j_1_seguinte->vida = 1000;
+    		if (j_2_seguinte->vida > 1000)
+        		j_2_seguinte->vida = 1000;
             check_wins(&j_1_seguinte, &j_2_seguinte, &ataqueJ1, &ataqueJ2, file_or_input, file);
             *j_1 = j_1_seguinte;
             *j_2 = j_2_seguinte;
@@ -931,7 +1109,15 @@ void    jogada(Jogador **j_1, Jogador **j_2, int file_or_input, FILE *file)
     if (j_1_seguinte->estamina > 1000)
         j_1_seguinte->estamina = 1000;
     if (j_2_seguinte->estamina > 1000)
-        j_2_seguinte->estamina = 1000;    
+        j_2_seguinte->estamina = 1000;
+    if (j_1_seguinte->estamina < 0)
+        j_1_seguinte->estamina = 0;
+    if (j_2_seguinte->estamina < 0)
+        j_2_seguinte->estamina = 0;
+    if (j_1_seguinte->vida > 1000)
+        j_1_seguinte->vida = 1000;
+    if (j_2_seguinte->vida > 1000)
+        j_2_seguinte->vida = 1000;
     *j_1 = j_1_seguinte;
     *j_2 = j_2_seguinte;
     check_wins(j_1, j_2, &ataqueJ1, &ataqueJ2, file_or_input, file);
@@ -941,7 +1127,7 @@ int main(int argc, char **argv)
 {
     Jogador *j_1;
     Jogador *j_2;
-    int64_t file_or_input;
+    int file_or_input;
     FILE     *file;
     int     prep;
 
@@ -966,7 +1152,7 @@ int main(int argc, char **argv)
     j_2 = init_jogador(2);
     while (1)
     {
-        prep = prep_jogada(j_1, file, file_or_input);
+        prep = prep_jogada(&j_1, file, file_or_input, &j_2);
         if (prep == 1)
             exit_game(&j_1, &j_2, "Entrada invalida\n", file_or_input, file);
         else if (prep == TARZANTABORDA)
@@ -974,7 +1160,7 @@ int main(int argc, char **argv)
             tarzantaborda(&j_1, &j_2, atoi(&(j_1->ataque[13])));
             continue;
         }
-        prep = prep_jogada(j_2, file, file_or_input);
+        prep = prep_jogada(&j_2, file, file_or_input, &j_2);
         if (prep == 1)
             exit_game(&j_1, &j_2, "Entrada invalida\n", file_or_input, file);
         else if (prep == TARZANTABORDA)

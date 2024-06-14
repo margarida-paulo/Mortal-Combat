@@ -1,21 +1,9 @@
-P#1 [1000|1000] (x1) H: I: P#2 [1000|1000] (x1) H: I: [TATAPAAA, ] 
+P#1 [1000|1000] (x1) H: I: P#2 [1000|1000] (x1) H: I: [R,Z][R,Z][R,Z][R,Z]
 
-P#1 [1000|800] (x1) H: TATAPAAA I: P#2 [800|1000] (x1) H: I: [TATAPAAA, ] 
+P#1 [1000|900] (x1) H: RRRR I: P#2 [920|900] (x1) H: ZZZZ I: [R,Z][R,Z][R,Z][R,Z]
 
-P#1 [1000|600] (x2) H: TATAPAAATATAPAAA I: P#2 [600|1000] (x1) H: I: [M,M][R,O][M,M][ ,O] 
+P#1 [1000|800] (x1) H: RRRRRRRR I:
 
-P#1 [960|550] (x2) H: TATAPAAATATAPAAAMRM I:
+P#1 [1000|1000] (x1) H: I: P#2 [1000|1000] (x1) H: I: [O,O]
 
->>> Voltou 4 ataques 
-
-P#1 [1000|600] (x2) H: TATAPAAATATAPAAA I: P#2 [600|1000] (x1) H: I: [ ,ARROZAO] 
-
-P#1 [500|625] (x2) H: TATAPAAATATAPAAA I:
-
->>> Voltou 10 ataques 
-
-P#1 [1000|1000] (x1) H: I: P#2 [1000|1000] (x1) H: I: [STTEACC,ARROZAO] 
-
-P#1 [500|700] (x2) H: STTEACC I: P#2 [700|500] (x3) H: ARROZAO I: [O,O] 
-
-P#1 [500|675] (x2) H: STTEACCO I: Entrada invalida
+P#1 [1000|975] (x1) H: O I: Entrada invalida

@@ -1,24 +1,5 @@
-P#1 [1000|1000] (x1) H: I: TATAPAAA P#2 [1000|1000] (x1) H: I: MDMD [TATAPAAA, ]
+P#1 [1000|1000] (x1) H: I: P#2 [1000|1000] (x1) H: I: [R,Z][R,Z][R,Z][R,Z]
 
-P#1 [1000|800] (x1) H: TATAPAAA I: TATAPAAA P#2 [800|1000] (x1) H:  I: RRRD [TATAPAAA, ]
+P#1 [1000|900] (x1) H: RRRR I: P#2 [920|900] (x1) H: ZZZZ I: [R,Z][R,Z][R,Z][R,Z]
 
-P#1 [1000|600] (x2) H: TATAPAAATATAPAAA I: MRM P#2 [600|1000] (x1) H:   I: MOMO [M,M][R,O][M,M][ ,O]
-
-P#1 [960|550] (x2) H: TATAPAAATATAPAAAMRM I: TARZANTABORDA4
-
->>> Voltou 4 ataques
-
-P#1 [1000|1000] (x1) H: I: TOTO P#2 [1000|1000] (x1) H: I: ARROZAO [ ,ARROZAO]
-
-P#1 [500|1000] (x1) H:  I: TARZANTABORDA10
-
-Estamina insuficiente
-
-P#1 [500|1000] (x1) H:  I: STTEACC P#2 [1000|500] (x3) H: ARROZAOI: ARROZAO
-
-Estamina insuficiente
-
-P#2 [1000|500] (x3) H: ARROZAOI: O [STTEACC, ]
-
-P#1 [500|700] (x2) H:  STTEACCI: O P#2 [700|525] (x2) H: ARROZAO I: END
-Entrada invalida
+P#1 [1000|800] (x1) H: RRRRRRRR I: Entrada invalida
