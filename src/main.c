@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#define DEBUG 0
+
 #define COMBO 0
 #define ATAQUES 1
 #define FICHEIRO 0
@@ -31,11 +33,27 @@ void        check_wins(Jogador **j_1, Jogador **j_2);
 Jogador    *init_jogador(int id);
 void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem);
 
-//nbn
+//
 // Returns the points taken by an attack. Positive points
 //take life from Jogador 2. Negative points take life from
 //Jogador 1.
 // If the attacks are not valid, returns -50.
+
+/* Jogador *dup_jogador_seguinte(Jogador *jogador)
+{
+    Jogador *novo_jogador = malloc(sizeof(Jogador));
+    novo_jogador->ataque = NULL;
+    novo_jogador->estamina = jogador->estamina;
+    novo_jogador->id = jogador->id;
+    novo_jogador->id_ataque = jogador->id_ataque + 1;
+    novo_jogador->multi_estamina = jogador->multi_estamina;
+    novo_jogador->vida = jogador->vida;
+    jogador->next = novo_jogador;
+    novo_jogador->prev = jogador;
+    novo_jogador->next = NULL;
+    return (novo_jogador);
+} */
+
 int efeito_ataque_simples(char j_1, char j_2)
 {
     if (j_1 == j_2)
@@ -489,7 +507,6 @@ int    ataque_invalido(char ataque[], Jogador *jogador){
     return (0);
 }
 
-
 char    *charstrjoin_frees(char c, char *str)
 {
     char    *new_str;
@@ -510,7 +527,6 @@ char    *charstrjoin_frees(char c, char *str)
     return (new_str);
 }
 
-
 void    print_history(Jogador *jogador)
 {
     Jogador *temp;
@@ -519,18 +535,26 @@ void    print_history(Jogador *jogador)
     temp = jogador->prev;
     for (int i = 0; i < 20 && temp != NULL;)
     {
-        if (temp->ataque != NULL)
+        if (temp->ataque != NULL && temp->tipo_de_ataque == COMBO)
+        {
+            for(int a = strlen(temp->ataque) - 1; a >= 0; a--)
+            {
+                history = charstrjoin_frees(temp->ataque[a], history);
+            }
+            i++;
+            if (i >= 20)
+                break;           
+        }
+        else if (temp->ataque != NULL)
         {
             for(int a = strlen(temp->ataque) - 1; a >= 0; a--)
             {
                 history = charstrjoin_frees(temp->ataque[a], history);
                 i++;
-                if (i == 20)
+                if (i >= 20)
                     break;
             }
         }
-        if (i == 20)
-            break;
         temp = temp->prev;
     }
     if (history == NULL)
@@ -548,7 +572,10 @@ int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
 {
     char ataque[200];
     jogador->multi_estamina = multi_estamina(jogador);
-    printf("P#%d[%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
+    if (DEBUG == 1)
+        printf("Jogada: %d P#%d [%d|%d] (x%d)\n", jogador->id_ataque, jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
+    else
+        printf("P#%d [%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
     print_history(jogador);
     if (input_or_file == INPUT)
     {
@@ -557,8 +584,7 @@ int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
     }
     else
     {
-        fgets(ataque, 200, file);
-        if (ataque == NULL)
+        if (fgets(ataque, 200, file) == NULL)
             return (1);
         if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
             ataque[strlen(ataque) - 1] = '\0';
@@ -567,12 +593,11 @@ int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
     while (ataque_invalido(ataque, jogador) == 2)
     {
         printf("Estamina insuficiente\n");
-        printf("P#%d[%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
+        printf("P#%d [%d|%d] (x%d)\n", jogador->id, jogador->vida, jogador->estamina, jogador->multi_estamina);
         print_history(jogador);
         if (input_or_file == FICHEIRO)
         {
-            fgets(ataque, 200, file);
-            if (ataque == NULL)
+            if (fgets(ataque, 200, file) == NULL)
                 return (1);
             if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
                 ataque[strlen(ataque) - 1] = '\0';
@@ -606,11 +631,11 @@ int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
 void        check_wins(Jogador **j_1, Jogador **j_2)
 {
     if ((*j_1)->vida <= 0 && (*j_2)->vida <= 0)
-        exit_game((j_1), (j_2), "Empate! O jogo termina!\n");
+        exit_game((j_1), (j_2), "Empate! O jogo termina!");
     else if ((*j_1)->vida <= 0)
-        exit_game((j_1), (j_2), "Jogador 2 venceu o jogo!\n");
+        exit_game((j_1), (j_2), "Jogador 2 venceu o jogo!");
     else if ((*j_2)->vida <= 0)
-        exit_game((j_1), (j_2), "Jogador 1 venceu o jogo!\n");
+        exit_game((j_1), (j_2), "Jogador 1 venceu o jogo!");
 }
 
 Jogador    *init_jogador(int id)
@@ -701,7 +726,6 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     j_2_seguinte->prev = *j_2;
     j_1_seguinte->id = (*j_1)->id;
     j_2_seguinte->id = (*j_2)->id;
-    printf("[%c,%c][%c,%c][%c,%c][%c,%c]\n", (*j_1)->ataque[0], (*j_2)->ataque[0], (*j_1)->ataque[1], (*j_2)->ataque[1], (*j_1)->ataque[2], (*j_2)->ataque[2], (*j_1)->ataque[3], (*j_2)->ataque[3]);
     if (!strncmp((*j_1)->ataque, "TARZANTABORDA", 13))
     {
         tarzantaborda(j_1, j_2, atoi(&(*j_1)->ataque[13]));
@@ -709,8 +733,15 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     }
     if ((*j_1)->tipo_de_ataque == ATAQUES && (*j_2)->tipo_de_ataque == ATAQUES)
     {
+        printf("[%c,%c][%c,%c][%c,%c][%c,%c]\n", (*j_1)->ataque[0], (*j_2)->ataque[0], (*j_1)->ataque[1], (*j_2)->ataque[1], (*j_1)->ataque[2], (*j_2)->ataque[2], (*j_1)->ataque[3], (*j_2)->ataque[3]);
         for (int i = 0; i < 4; i++)
         {
+            int vida_perdidaJ1 = 0;
+            int vida_perdidaJ2 = 0;
+            int estamina_gastaJ1 = 0;
+            int estamina_gastaJ2 = 0;
+            if ((*j_1)->ataque[i] == ' ' && (*j_2)->ataque[i] == ' ')
+                break;
             if ((*j_1)->ataque[i] == 'D')
             {
                 estamina_gastaJ1 += 10;
@@ -731,13 +762,26 @@ void    jogada(Jogador **j_1, Jogador **j_2)
                 estamina_gastaJ2 += 25;
             pontos_ataque = efeito_ataque_simples((*j_1)->ataque[i], (*j_2)->ataque[i]);
             if (pontos_ataque > 0)
-                vida_perdidaJ2 += (pontos_ataque * (*j_1)->multi_estamina);
+                vida_perdidaJ2 += (pontos_ataque * (*j_2)->multi_estamina);
             else if (pontos_ataque < 0)
-                vida_perdidaJ1 += (-pontos_ataque * (*j_2)->multi_estamina);
+                vida_perdidaJ1 += (-pontos_ataque * (*j_1)->multi_estamina);
+            j_1_seguinte->vida -= vida_perdidaJ1;
+            j_2_seguinte->vida -= vida_perdidaJ2;
+            j_1_seguinte->estamina -= estamina_gastaJ1;
+            j_2_seguinte->estamina -= estamina_gastaJ2;
+            if (j_1_seguinte->estamina < 0)
+                j_1_seguinte->estamina = 0;
+            if (j_2_seguinte->estamina < 0)
+                j_2_seguinte->estamina = 0;
+            check_wins(&j_1_seguinte, &j_2_seguinte);
         }
+        *j_1 = j_1_seguinte;
+        *j_2 = j_2_seguinte;
+        return;
     }
     else if ((*j_1)->tipo_de_ataque == COMBO && (*j_2)->tipo_de_ataque == COMBO)
     {
+        printf("[%s,%s]\n", (*j_1)->ataque, (*j_2)->ataque);
         if(strcmp((*j_1)->ataque, "ARROZAO") == 0)
         {
             vida_perdidaJ2 += 500;
@@ -789,6 +833,7 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     }
     else if ((*j_2)->tipo_de_ataque == COMBO)
     {
+        printf("[ ,%s]\n", (*j_2)->ataque);
         if(strcmp((*j_2)->ataque, "ARROZAO") == 0)
         {
             vida_perdidaJ1 += 500;
@@ -812,13 +857,14 @@ void    jogada(Jogador **j_1, Jogador **j_2)
             vida_perdidaJ1 += 200;
             estamina_gastaJ2 += 200;
         }
-
+        estamina_gastaJ1 -= 25;
         free((*j_1)->ataque);
         (*j_1)->ataque = strdup(" ");
 
     }
     else if ((*j_1)->tipo_de_ataque == COMBO)
     {
+        printf("[%s, ]\n", (*j_1)->ataque);
         if(strcmp((*j_1)->ataque, "ARROZAO") == 0)
         {
             vida_perdidaJ2 += 500;
@@ -842,20 +888,22 @@ void    jogada(Jogador **j_1, Jogador **j_2)
             vida_perdidaJ2 += 200;
             estamina_gastaJ1 += 200;
         }
+        estamina_gastaJ2 -= 25;
         free((*j_2)->ataque);
         (*j_2)->ataque = strdup(" ");
 
     }
-    if((*j_1)->tipo_de_ataque == ATAQUES && (*j_2)->tipo_de_ataque == COMBO)
-        estamina_gastaJ1 -= 25;
-    if((*j_2)->tipo_de_ataque == ATAQUES && (*j_1)->tipo_de_ataque == COMBO)
-        estamina_gastaJ2 -= 25;
     j_1_seguinte->vida = (*j_1)->vida - vida_perdidaJ1;
     j_2_seguinte->vida = (*j_2)->vida - vida_perdidaJ2;
     j_1_seguinte->estamina = (*j_1)->estamina - estamina_gastaJ1;
     j_2_seguinte->estamina = (*j_2)->estamina - estamina_gastaJ2;
+    if (j_1_seguinte->estamina > 1000)
+        j_1_seguinte->estamina = 1000;
+    if (j_2_seguinte->estamina > 1000)
+        j_2_seguinte->estamina = 1000;    
     *j_1 = j_1_seguinte;
     *j_2 = j_2_seguinte;
+    check_wins(j_1, j_2);
 }
 
 int main(int argc, char **argv)
@@ -904,7 +952,6 @@ int main(int argc, char **argv)
             continue;
         }
         jogada(&j_1, &j_2);
-        check_wins(&j_1, &j_2);
     }
 
 }
