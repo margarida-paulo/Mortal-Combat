@@ -29,9 +29,9 @@ typedef struct historico_jogadas{
 int 		efeito_ataque_simples(char j_1, char j_2);
 int 		multi_estamina(Jogador *jogador);
 int    	    prep_jogada(Jogador *jogador, FILE *file, int input_or_file);
-void        check_wins(Jogador **j_1, Jogador **j_2);
+void        check_wins(Jogador **j_1, Jogador **j_2, char **ataqueJ1, char **ataqueJ2, int file_or_input, FILE *file);
 Jogador    *init_jogador(int id);
-void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem);
+void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int file_or_input, FILE *file);
 
 //
 // Returns the points taken by an attack. Positive points
@@ -39,20 +39,6 @@ void    	exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem);
 //Jogador 1.
 // If the attacks are not valid, returns -50.
 
-/* Jogador *dup_jogador_seguinte(Jogador *jogador)
-{
-    Jogador *novo_jogador = malloc(sizeof(Jogador));
-    novo_jogador->ataque = NULL;
-    novo_jogador->estamina = jogador->estamina;
-    novo_jogador->id = jogador->id;
-    novo_jogador->id_ataque = jogador->id_ataque + 1;
-    novo_jogador->multi_estamina = jogador->multi_estamina;
-    novo_jogador->vida = jogador->vida;
-    jogador->next = novo_jogador;
-    novo_jogador->prev = jogador;
-    novo_jogador->next = NULL;
-    return (novo_jogador);
-} */
 
 int efeito_ataque_simples(char j_1, char j_2)
 {
@@ -628,14 +614,33 @@ int    prep_jogada(Jogador *jogador, FILE *file, int input_or_file)
     return (0);
 }
 
-void        check_wins(Jogador **j_1, Jogador **j_2)
+void        check_wins(Jogador **j_1, Jogador **j_2, char **ataqueJ1, char **ataqueJ2, int file_or_input, FILE *file)
 {
+
     if ((*j_1)->vida <= 0 && (*j_2)->vida <= 0)
-        exit_game((j_1), (j_2), "Empate! O jogo termina!");
+    {
+        if (*ataqueJ1 != NULL)
+            free(*ataqueJ1);
+        if (*ataqueJ2 != NULL)
+            free(*ataqueJ2);
+        exit_game((j_1), (j_2), "Empate! O jogo termina!", file_or_input, file);
+    }
     else if ((*j_1)->vida <= 0)
-        exit_game((j_1), (j_2), "Jogador 2 venceu o jogo!");
+    {
+        if (*ataqueJ1 != NULL)
+            free(*ataqueJ1);
+        if (*ataqueJ2 != NULL)
+            free(*ataqueJ2);
+        exit_game((j_1), (j_2), "Jogador 2 venceu o jogo!", file_or_input, file);
+    }
     else if ((*j_2)->vida <= 0)
-        exit_game((j_1), (j_2), "Jogador 1 venceu o jogo!");
+    {
+        if (*ataqueJ1 != NULL)
+            free(*ataqueJ1);
+        if (*ataqueJ2 != NULL)
+            free(*ataqueJ2);
+        exit_game((j_1), (j_2), "Jogador 1 venceu o jogo!", file_or_input, file);
+    }
 }
 
 Jogador    *init_jogador(int id)
@@ -652,7 +657,7 @@ Jogador    *init_jogador(int id)
     return (j);
 }
 
-void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem)
+void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem, int file_or_input, FILE *file)
 {
     Jogador *temp;
     
@@ -672,6 +677,14 @@ void    exit_game(Jogador **j_1, Jogador **j_2, const char *mensagem)
             free((*j_2)->ataque);
         free(*j_2);
         (*j_2) = temp;
+    }
+    if (file_or_input == FICHEIRO)
+    {
+        if (fclose(file) != 0)
+        {
+            printf("Failed to close file");
+            exit(0);
+        }
     }
 
     printf("%s", mensagem);
@@ -701,31 +714,33 @@ void    tarzantaborda(Jogador **j_1, Jogador **j_2, int retrocessos)
     }
 }
 
-void    jogada(Jogador **j_1, Jogador **j_2)
+Jogador *dup_jogador_seguinte(Jogador *jogador)
 {
+    Jogador *novo_jogador = malloc(sizeof(Jogador));
+    novo_jogador->ataque = NULL;
+    novo_jogador->estamina = jogador->estamina;
+    novo_jogador->id = jogador->id;
+    novo_jogador->id_ataque = jogador->id_ataque + 1;
+    novo_jogador->multi_estamina = jogador->multi_estamina;
+    novo_jogador->vida = jogador->vida;
+    jogador->next = novo_jogador;
+    novo_jogador->prev = jogador;
+    novo_jogador->next = NULL;
+    novo_jogador->tipo_de_ataque = jogador->tipo_de_ataque;
+    return (novo_jogador);
+}
+
+void    jogada(Jogador **j_1, Jogador **j_2, int file_or_input, FILE *file)
+{
+    char    *ataqueJ1 = NULL;
+    char    *ataqueJ2 = NULL;
     int vida_perdidaJ1 = 0;
     int vida_perdidaJ2 = 0;
     int estamina_gastaJ1 = 0;
     int estamina_gastaJ2 = 0;
     int pontos_ataque;
-    Jogador *j_1_seguinte = malloc(sizeof(Jogador));
-    Jogador *j_2_seguinte = malloc(sizeof(Jogador));
-    j_1_seguinte->vida = (*j_1)->vida;
-    j_1_seguinte->estamina = (*j_1)->estamina;
-    j_2_seguinte->vida = (*j_2)->vida;
-    j_2_seguinte->estamina = (*j_2)->estamina;
-    j_1_seguinte->id_ataque = (*j_1)->id_ataque + 1;
-    j_2_seguinte->id_ataque = (*j_2)->id_ataque + 1;
-    j_1_seguinte->ataque = NULL;
-    j_2_seguinte->ataque = NULL;
-    (*j_1)->next = j_1_seguinte;
-    (*j_2)->next = j_2_seguinte;
-    j_1_seguinte->next = NULL;
-    j_2_seguinte->next = NULL;
-    j_1_seguinte->prev = *j_1;
-    j_2_seguinte->prev = *j_2;
-    j_1_seguinte->id = (*j_1)->id;
-    j_2_seguinte->id = (*j_2)->id;
+    Jogador *j_1_seguinte;
+    Jogador *j_2_seguinte;
     if (!strncmp((*j_1)->ataque, "TARZANTABORDA", 13))
     {
         tarzantaborda(j_1, j_2, atoi(&(*j_1)->ataque[13]));
@@ -733,50 +748,64 @@ void    jogada(Jogador **j_1, Jogador **j_2)
     }
     if ((*j_1)->tipo_de_ataque == ATAQUES && (*j_2)->tipo_de_ataque == ATAQUES)
     {
-        printf("[%c,%c][%c,%c][%c,%c][%c,%c]\n", (*j_1)->ataque[0], (*j_2)->ataque[0], (*j_1)->ataque[1], (*j_2)->ataque[1], (*j_1)->ataque[2], (*j_2)->ataque[2], (*j_1)->ataque[3], (*j_2)->ataque[3]);
+        ataqueJ1 = (*j_1)->ataque;
+        ataqueJ2 = (*j_2)->ataque;
+        for (int i = 0; i < 4 && !((*j_1)->ataque[i] == ' ' && (*j_2)->ataque[i] == ' '); i++)
+            printf("[%c,%c]", (*j_1)->ataque[i], (*j_2)->ataque[i]);
+        printf("\n");
         for (int i = 0; i < 4; i++)
         {
             int vida_perdidaJ1 = 0;
             int vida_perdidaJ2 = 0;
             int estamina_gastaJ1 = 0;
             int estamina_gastaJ2 = 0;
-            if ((*j_1)->ataque[i] == ' ' && (*j_2)->ataque[i] == ' ')
+            (*j_1)->ataque = strdup("A");
+            (*j_1)->ataque[0] = ataqueJ1[i];
+            (*j_2)->ataque = strdup("A");
+            (*j_2)->ataque[0] = ataqueJ2[i];
+            if (ataqueJ1[i] == ' ' && ataqueJ2[i] == ' ')
                 break;
-            if ((*j_1)->ataque[i] == 'D')
+            if (ataqueJ1[i] == 'D')
             {
                 estamina_gastaJ1 += 10;
                 vida_perdidaJ1 -= (10 * (*j_1)->multi_estamina);
             }
-            if ((*j_2)->ataque[i] == 'D')
+            if (ataqueJ2[i] == 'D')
             {
                 estamina_gastaJ2 += 10;
                 vida_perdidaJ2 -= (10 * (*j_2)->multi_estamina);
             }
-            if ((*j_1)->ataque[i] == ' ')
+            if (ataqueJ1[i] == ' ')
                 estamina_gastaJ1 -= 25;
-            if ((*j_2)->ataque[i] == ' ')
+            if (ataqueJ2[i] == ' ')
                 estamina_gastaJ2 -= 25;
-            if ((*j_1)->ataque[i] != 'D' && (*j_1)->ataque[i] != ' ')
+            if (ataqueJ1[i] != 'D' && ataqueJ1[i] != ' ')
                 estamina_gastaJ1 += 25;
-            if ((*j_2)->ataque[i] != 'D' && (*j_2)->ataque[i] != ' ')
+            if (ataqueJ2[i] != 'D' && ataqueJ2[i] != ' ')
                 estamina_gastaJ2 += 25;
-            pontos_ataque = efeito_ataque_simples((*j_1)->ataque[i], (*j_2)->ataque[i]);
+            pontos_ataque = efeito_ataque_simples(ataqueJ1[i], ataqueJ2[i]);
             if (pontos_ataque > 0)
                 vida_perdidaJ2 += (pontos_ataque * (*j_2)->multi_estamina);
             else if (pontos_ataque < 0)
                 vida_perdidaJ1 += (-pontos_ataque * (*j_1)->multi_estamina);
+            j_1_seguinte = dup_jogador_seguinte(*j_1);
+            j_2_seguinte = dup_jogador_seguinte(*j_2);
             j_1_seguinte->vida -= vida_perdidaJ1;
             j_2_seguinte->vida -= vida_perdidaJ2;
             j_1_seguinte->estamina -= estamina_gastaJ1;
             j_2_seguinte->estamina -= estamina_gastaJ2;
+            j_1_seguinte->ataque = NULL;
+            j_2_seguinte->ataque = NULL;
             if (j_1_seguinte->estamina < 0)
                 j_1_seguinte->estamina = 0;
             if (j_2_seguinte->estamina < 0)
                 j_2_seguinte->estamina = 0;
-            check_wins(&j_1_seguinte, &j_2_seguinte);
+            check_wins(&j_1_seguinte, &j_2_seguinte, &ataqueJ1, &ataqueJ2, file_or_input, file);
+            *j_1 = j_1_seguinte;
+            *j_2 = j_2_seguinte;
         }
-        *j_1 = j_1_seguinte;
-        *j_2 = j_2_seguinte;
+        free(ataqueJ1);
+        free(ataqueJ2);
         return;
     }
     else if ((*j_1)->tipo_de_ataque == COMBO && (*j_2)->tipo_de_ataque == COMBO)
@@ -893,6 +922,8 @@ void    jogada(Jogador **j_1, Jogador **j_2)
         (*j_2)->ataque = strdup(" ");
 
     }
+    j_1_seguinte = dup_jogador_seguinte(*j_1);
+    j_2_seguinte = dup_jogador_seguinte(*j_2);
     j_1_seguinte->vida = (*j_1)->vida - vida_perdidaJ1;
     j_2_seguinte->vida = (*j_2)->vida - vida_perdidaJ2;
     j_1_seguinte->estamina = (*j_1)->estamina - estamina_gastaJ1;
@@ -903,7 +934,7 @@ void    jogada(Jogador **j_1, Jogador **j_2)
         j_2_seguinte->estamina = 1000;    
     *j_1 = j_1_seguinte;
     *j_2 = j_2_seguinte;
-    check_wins(j_1, j_2);
+    check_wins(j_1, j_2, &ataqueJ1, &ataqueJ2, file_or_input, file);
 }
 
 int main(int argc, char **argv)
@@ -937,7 +968,7 @@ int main(int argc, char **argv)
     {
         prep = prep_jogada(j_1, file, file_or_input);
         if (prep == 1)
-            exit_game(&j_1, &j_2, "Entrada invalida\n");
+            exit_game(&j_1, &j_2, "Entrada invalida\n", file_or_input, file);
         else if (prep == TARZANTABORDA)
         {
             tarzantaborda(&j_1, &j_2, atoi(&(j_1->ataque[13])));
@@ -945,13 +976,13 @@ int main(int argc, char **argv)
         }
         prep = prep_jogada(j_2, file, file_or_input);
         if (prep == 1)
-            exit_game(&j_1, &j_2, "Entrada invalida\n");
+            exit_game(&j_1, &j_2, "Entrada invalida\n", file_or_input, file);
         else if (prep == TARZANTABORDA)
         {
             tarzantaborda(&j_1, &j_2, atoi(&(j_2->ataque[13])));
             continue;
         }
-        jogada(&j_1, &j_2);
+        jogada(&j_1, &j_2, file_or_input, file);
     }
 
 }
