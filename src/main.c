@@ -658,8 +658,8 @@ void    print_history(Jogador *jogador)
     }
 }
 
-// Returns 0 if everything ran smoothly, 1 if the file is over or if the attack is invalid,
-// and 2 if TARZANTABORDA was activated.
+// Returns 0 if everything ran smoothly, 1 if the attack is invalid, 2 if TARZANTABORDA was activated
+// and 3 when the file is over.
 int    prep_jogada(Jogador **jogador, FILE *file, int input_or_file, Jogador **outro_jogador)
 {
     char 	ataque[200];
@@ -678,7 +678,7 @@ int    prep_jogada(Jogador **jogador, FILE *file, int input_or_file, Jogador **o
     else
     {
         if (fgets(ataque, 200, file) == NULL)
-            return (1);
+            return (3);
         if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
             ataque[strlen(ataque) - 1] = '\0';
         printf("I: %s\n", ataque);
@@ -691,7 +691,7 @@ int    prep_jogada(Jogador **jogador, FILE *file, int input_or_file, Jogador **o
         if (input_or_file == FICHEIRO)
         {
             if (fgets(ataque, 200, file) == NULL)
-                return (1);
+                return (3);
             if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
                 ataque[strlen(ataque) - 1] = '\0';
             printf("I: %s\n", ataque);
@@ -744,7 +744,7 @@ int    prep_jogada(Jogador **jogador, FILE *file, int input_or_file, Jogador **o
         if (input_or_file == FICHEIRO)
         {
             if (fgets(ataque, 200, file) == NULL)
-                return (1);
+                return (3);
             if (strlen(ataque) != 0 && ataque[strlen(ataque) - 1] == '\n')
                 ataque[strlen(ataque) - 1] = '\0';
             printf("I: %s\n", ataque);
@@ -787,7 +787,7 @@ void        check_wins(Jogador **j_1, Jogador **j_2, char **ataqueJ1, char **ata
             free(*ataqueJ1);
         if (*ataqueJ2 != NULL)
             free(*ataqueJ2);
-        exit_game((j_1), (j_2), "Empate! O jogo termina!", file_or_input, file);
+        exit_game((j_1), (j_2), "Empate! O jogo termina!\n", file_or_input, file);
     }
     else if ((*j_1)->vida <= 0)
     {
@@ -795,7 +795,7 @@ void        check_wins(Jogador **j_1, Jogador **j_2, char **ataqueJ1, char **ata
             free(*ataqueJ1);
         if (*ataqueJ2 != NULL)
             free(*ataqueJ2);
-        exit_game((j_1), (j_2), "Jogador 2 venceu o jogo!", file_or_input, file);
+        exit_game((j_1), (j_2), "Jogador 2 venceu o jogo!\n", file_or_input, file);
     }
     else if ((*j_2)->vida <= 0)
     {
@@ -803,7 +803,7 @@ void        check_wins(Jogador **j_1, Jogador **j_2, char **ataqueJ1, char **ata
             free(*ataqueJ1);
         if (*ataqueJ2 != NULL)
             free(*ataqueJ2);
-        exit_game((j_1), (j_2), "Jogador 1 venceu o jogo!", file_or_input, file);
+        exit_game((j_1), (j_2), "Jogador 1 venceu o jogo!\n", file_or_input, file);
     }
 }
 
@@ -1179,6 +1179,8 @@ int main(int argc, char **argv)
         prep = prep_jogada(&j_1, file, file_or_input, &j_2);
         if (prep == 1)
             exit_game(&j_1, &j_2, "Entrada invalida\n", file_or_input, file);
+        else if (prep == 3)
+            exit_game(&j_1, &j_2, "", file_or_input, file);
         else if (prep == TARZANTABORDA)
         {
             tarzantaborda(&j_1, &j_2, atoi(&(j_1->ataque[13])));
@@ -1187,6 +1189,8 @@ int main(int argc, char **argv)
         prep = prep_jogada(&j_2, file, file_or_input, &j_2);
         if (prep == 1)
             exit_game(&j_1, &j_2, "Entrada invalida\n", file_or_input, file);
+        else if (prep == 3)
+            exit_game(&j_1, &j_2, "\n", file_or_input, file);
         else if (prep == TARZANTABORDA)
         {
             tarzantaborda(&j_1, &j_2, atoi(&(j_2->ataque[13])));
