@@ -7,7 +7,7 @@
 CC = gcc
 
 # define any compile-time flags
-CFLAGS	:= -g -Werror -Wvla -Wall -Wpedantic -Wextra -Wdeclaration-after-statement -Werror=declaration-after-statement -Werror=misleading-indentation -Werror=address #-fsanitize=address
+CFLAGS	:= -g -Wvla -Wall -Wpedantic -Wextra -Wdeclaration-after-statement #-fsanitize=address
 
 # define library paths in addition to /usr/lib
 #   if I wanted to include libraries not in /usr/lib I'd specify

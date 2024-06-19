@@ -151,7 +151,7 @@ int efeito_ataque_simples(char j_1, char j_2)
                     return (12);
                 }
                 case ' ' : {
-                    return (-20);
+                    return (20);
                 }
             }
             break;
@@ -934,7 +934,13 @@ void    jogada(Jogador **j_1, Jogador **j_2, int file_or_input, FILE *file)
             (*j_2)->ataque = strdup("A");
             (*j_2)->ataque[0] = ataqueJ2[i];
             if (ataqueJ1[i] == ' ' && ataqueJ2[i] == ' ')
+            {
+                free((*j_1)->ataque);
+                free((*j_2)->ataque);
+                (*j_1)->ataque = NULL;
+                (*j_2)->ataque = NULL;
                 break;
+            }
             if (ataqueJ1[i] == 'D')
             {
                 estamina_gastaJ1 += 10;
@@ -1123,6 +1129,22 @@ void    jogada(Jogador **j_1, Jogador **j_2, int file_or_input, FILE *file)
     check_wins(j_1, j_2, &ataqueJ1, &ataqueJ2, file_or_input, file);
 }
 
+void    print_table_points()
+{
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('Z','Z'), efeito_ataque_simples('Z','P'), efeito_ataque_simples('Z','A'), efeito_ataque_simples('Z','E'), efeito_ataque_simples('Z','T'), efeito_ataque_simples('Z','R'), efeito_ataque_simples('Z','C'), efeito_ataque_simples('Z','B'), efeito_ataque_simples('Z','O'), efeito_ataque_simples('Z','M'), efeito_ataque_simples('Z','D'), efeito_ataque_simples('Z',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('P','Z'), efeito_ataque_simples('P','P'), efeito_ataque_simples('P','A'), efeito_ataque_simples('P','E'), efeito_ataque_simples('P','T'), efeito_ataque_simples('P','R'), efeito_ataque_simples('P','C'), efeito_ataque_simples('P','B'), efeito_ataque_simples('P','O'), efeito_ataque_simples('P','M'), efeito_ataque_simples('P','D'), efeito_ataque_simples('P',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('A','Z'), efeito_ataque_simples('A','P'), efeito_ataque_simples('A','A'), efeito_ataque_simples('A','E'), efeito_ataque_simples('A','T'), efeito_ataque_simples('A','R'), efeito_ataque_simples('A','C'), efeito_ataque_simples('A','B'), efeito_ataque_simples('A','O'), efeito_ataque_simples('A','M'), efeito_ataque_simples('A','D'), efeito_ataque_simples('A',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('E','Z'), efeito_ataque_simples('E','P'), efeito_ataque_simples('E','A'), efeito_ataque_simples('E','E'), efeito_ataque_simples('E','T'), efeito_ataque_simples('E','R'), efeito_ataque_simples('E','C'), efeito_ataque_simples('E','B'), efeito_ataque_simples('E','O'), efeito_ataque_simples('E','M'), efeito_ataque_simples('E','D'), efeito_ataque_simples('E',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('T','Z'), efeito_ataque_simples('T','P'), efeito_ataque_simples('T','A'), efeito_ataque_simples('T','E'), efeito_ataque_simples('T','T'), efeito_ataque_simples('T','R'), efeito_ataque_simples('T','C'), efeito_ataque_simples('T','B'), efeito_ataque_simples('T','O'), efeito_ataque_simples('T','M'), efeito_ataque_simples('T','D'), efeito_ataque_simples('T',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('R','Z'), efeito_ataque_simples('R','P'), efeito_ataque_simples('R','A'), efeito_ataque_simples('R','E'), efeito_ataque_simples('R','T'), efeito_ataque_simples('R','R'), efeito_ataque_simples('R','C'), efeito_ataque_simples('R','B'), efeito_ataque_simples('R','O'), efeito_ataque_simples('R','M'), efeito_ataque_simples('R','D'), efeito_ataque_simples('R',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('C','Z'), efeito_ataque_simples('C','P'), efeito_ataque_simples('C','A'), efeito_ataque_simples('C','E'), efeito_ataque_simples('C','T'), efeito_ataque_simples('C','R'), efeito_ataque_simples('C','C'), efeito_ataque_simples('C','B'), efeito_ataque_simples('C','O'), efeito_ataque_simples('C','M'), efeito_ataque_simples('C','D'), efeito_ataque_simples('C',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('B','Z'), efeito_ataque_simples('B','P'), efeito_ataque_simples('B','A'), efeito_ataque_simples('B','E'), efeito_ataque_simples('B','T'), efeito_ataque_simples('B','R'), efeito_ataque_simples('B','C'), efeito_ataque_simples('B','B'), efeito_ataque_simples('B','O'), efeito_ataque_simples('B','M'), efeito_ataque_simples('B','D'), efeito_ataque_simples('B',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('O','Z'), efeito_ataque_simples('O','P'), efeito_ataque_simples('O','A'), efeito_ataque_simples('O','E'), efeito_ataque_simples('O','T'), efeito_ataque_simples('O','R'), efeito_ataque_simples('O','C'), efeito_ataque_simples('O','B'), efeito_ataque_simples('O','O'), efeito_ataque_simples('O','M'), efeito_ataque_simples('O','D'), efeito_ataque_simples('O',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('M','Z'), efeito_ataque_simples('M','P'), efeito_ataque_simples('M','A'), efeito_ataque_simples('M','E'), efeito_ataque_simples('M','T'), efeito_ataque_simples('M','R'), efeito_ataque_simples('M','C'), efeito_ataque_simples('M','B'), efeito_ataque_simples('M','O'), efeito_ataque_simples('M','M'), efeito_ataque_simples('M','D'), efeito_ataque_simples('M',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples('D','Z'), efeito_ataque_simples('D','P'), efeito_ataque_simples('D','A'), efeito_ataque_simples('D','E'), efeito_ataque_simples('D','T'), efeito_ataque_simples('D','R'), efeito_ataque_simples('D','C'), efeito_ataque_simples('D','B'), efeito_ataque_simples('D','O'), efeito_ataque_simples('D','M'), efeito_ataque_simples('D','D'), efeito_ataque_simples('D',' '));
+    printf("|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|%6i|\n", efeito_ataque_simples(' ','Z'), efeito_ataque_simples(' ','P'), efeito_ataque_simples(' ','A'), efeito_ataque_simples(' ','E'), efeito_ataque_simples(' ','T'), efeito_ataque_simples(' ','R'), efeito_ataque_simples(' ','C'), efeito_ataque_simples(' ','B'), efeito_ataque_simples(' ','O'), efeito_ataque_simples(' ','M'), efeito_ataque_simples(' ','D'), efeito_ataque_simples(' ',' '));
+}
+
 int main(int argc, char **argv)
 {
     Jogador *j_1;
@@ -1130,6 +1152,8 @@ int main(int argc, char **argv)
     int file_or_input;
     FILE     *file;
     int     prep;
+
+//    print_table_points();
 
     if (argc > 2)
     {
